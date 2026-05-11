@@ -1,0 +1,190 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Proficiency {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RoomStatus {
+  ACTIVE
+  ENDED
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+// ─── Thesis core tables ──────────────────────────────────────────────────────
+
+model User {
+  id            String      @id @default(uuid()) @db.Uuid
+  email         String      @unique @db.VarChar(255)
+  username      String      @unique @db.VarChar(100)
+  passwordHash  String?     @db.VarChar(255)
+  googleId      String?     @unique @db.VarChar(255)
+  targetLanguage String     @db.VarChar(10)
+  proficiency   Proficiency
+  avatarUrl     String?     @db.VarChar(500)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  refreshTokens  RefreshToken[]
+  roomsAsUser1   Room[]         @relation("RoomUser1")
+  roomsAsUser2   Room[]         @relation("RoomUser2")
+
+  // monolith relations
+  ownedLobbies   Lobby[]         @relation("LobbyOwner")
+  lobbyMembers   LobbyMember[]
+  lobbyMessages  LobbyMessage[]
+  friendsAsUser1 Friendship[]    @relation("FriendshipUser1")
+  friendsAsUser2 Friendship[]    @relation("FriendshipUser2")
+  sentRequests   FriendRequest[] @relation("FriendRequestSender")
+  receivedRequests FriendRequest[] @relation("FriendRequestReceiver")
+  convsAsUser1   Conversation[]  @relation("ConversationUser1")
+  convsAsUser2   Conversation[]  @relation("ConversationUser2")
+  sentMessages   Message[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique @db.VarChar(255)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// Room is created by the monolith when a call actually starts — NOT during match flow
+model Room {
+  id               String     @id @default(uuid()) @db.Uuid
+  user1Id          String     @db.Uuid
+  user2Id          String     @db.Uuid
+  agoraChannelName String     @db.VarChar(255)
+  agoraTokenUser1  String?
+  agoraTokenUser2  String?
+  status           RoomStatus @default(ACTIVE)
+  createdAt        DateTime   @default(now())
+  endedAt          DateTime?
+
+  user1 User @relation("RoomUser1", fields: [user1Id], references: [id])
+  user2 User @relation("RoomUser2", fields: [user2Id], references: [id])
+
+  @@map("rooms")
+}
+
+// ─── Monolith tables ─────────────────────────────────────────────────────────
+
+model Lobby {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  description String?
+  isPrivate   Boolean  @default(false)
+  language    String   @db.VarChar(10)
+  ownerId     String   @db.Uuid
+  createdAt   DateTime @default(now())
+
+  owner    User           @relation("LobbyOwner", fields: [ownerId], references: [id])
+  members  LobbyMember[]
+  messages LobbyMessage[]
+
+  @@map("lobbies")
+}
+
+model LobbyMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  lobbyId  String   @db.Uuid
+  userId   String   @db.Uuid
+  joinedAt DateTime @default(now())
+
+  lobby Lobby @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([lobbyId, userId])
+  @@map("lobby_members")
+}
+
+model LobbyMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  lobbyId   String   @db.Uuid
+  userId    String   @db.Uuid
+  content   String
+  createdAt DateTime @default(now())
+
+  lobby Lobby @relation(fields: [lobbyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@map("lobby_messages")
+}
+
+model Friendship {
+  id        String   @id @default(uuid()) @db.Uuid
+  user1Id   String   @db.Uuid
+  user2Id   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user1 User @relation("FriendshipUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2 User @relation("FriendshipUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+
+  @@unique([user1Id, user2Id])
+  @@map("friendships")
+}
+
+model FriendRequest {
+  id         String              @id @default(uuid()) @db.Uuid
+  senderId   String              @db.Uuid
+  receiverId String              @db.Uuid
+  status     FriendRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+
+  sender   User @relation("FriendRequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("FriendRequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@map("friend_requests")
+}
+
+model Conversation {
+  id        String   @id @default(uuid()) @db.Uuid
+  user1Id   String   @db.Uuid
+  user2Id   String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  user1    User      @relation("ConversationUser1", fields: [user1Id], references: [id], onDelete: Cascade)
+  user2    User      @relation("ConversationUser2", fields: [user2Id], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@unique([user1Id, user2Id])
+  @@map("conversations")
+}
+
+model Message {
+  id             String    @id @default(uuid()) @db.Uuid
+  conversationId String    @db.Uuid
+  senderId       String    @db.Uuid
+  content        String
+  createdAt      DateTime  @default(now())
+  readAt         DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@map("messages")
+}
