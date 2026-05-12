@@ -1,10 +1,15 @@
 import { Module } from '@nestjs/common';
-import { MonolithController } from './monolith.controller';
-import { MonolithService } from './monolith.service';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from '@app/shared';
+import { FriendsModule } from './friends/friends.module';
+import { DmModule } from './dm/dm.module';
 
 @Module({
-  imports: [],
-  controllers: [MonolithController],
-  providers: [MonolithService],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    FriendsModule,
+    DmModule,
+  ],
 })
 export class MonolithModule {}
