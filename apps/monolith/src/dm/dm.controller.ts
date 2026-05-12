@@ -9,7 +9,12 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Request } from 'express';
 import { DmService } from './dm.service';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -40,7 +45,9 @@ export class DmController {
     return this.dmService.sendMessage(userId, receiverId, dto);
   }
 
-  @ApiOperation({ summary: 'Get messages with a user (newest-first, cursor paginated)' })
+  @ApiOperation({
+    summary: 'Get messages with a user (newest-first, cursor paginated)',
+  })
   @ApiQuery({ name: 'cursor', required: false })
   @ApiQuery({ name: 'limit', required: false, example: 30 })
   @Get(':userId/messages')
@@ -51,12 +58,20 @@ export class DmController {
     @Query('limit') limit?: string,
   ) {
     const { userId } = req.user as { userId: string };
-    return this.dmService.getMessages(userId, otherUserId, cursor, limit ? parseInt(limit, 10) : 30);
+    return this.dmService.getMessages(
+      userId,
+      otherUserId,
+      cursor,
+      limit ? parseInt(limit, 10) : 30,
+    );
   }
 
   @ApiOperation({ summary: 'Mark all messages in a conversation as read' })
   @Patch(':conversationId/read')
-  markRead(@Req() req: Request, @Param('conversationId') conversationId: string) {
+  markRead(
+    @Req() req: Request,
+    @Param('conversationId') conversationId: string,
+  ) {
     const { userId } = req.user as { userId: string };
     return this.dmService.markRead(userId, conversationId);
   }

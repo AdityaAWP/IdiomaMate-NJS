@@ -24,9 +24,13 @@ export class DmService {
         ],
       },
     });
-    if (!areFriends) throw new ForbiddenException('You are not friends with this user');
+    if (!areFriends)
+      throw new ForbiddenException('You are not friends with this user');
 
-    const conversation = await this.getOrCreateConversation(senderId, receiverId);
+    const conversation = await this.getOrCreateConversation(
+      senderId,
+      receiverId,
+    );
 
     return this.prisma.message.create({
       data: {
@@ -45,7 +49,12 @@ export class DmService {
     });
   }
 
-  async getMessages(userId: string, otherUserId: string, cursor?: string, limit = 30) {
+  async getMessages(
+    userId: string,
+    otherUserId: string,
+    cursor?: string,
+    limit = 30,
+  ) {
     const conversation = await this.prisma.conversation.findFirst({
       where: {
         OR: [
@@ -75,7 +84,7 @@ export class DmService {
 
     return {
       messages: messages.reverse(),
-      nextCursor: hasMore ? messages[0]?.id ?? null : null,
+      nextCursor: hasMore ? (messages[0]?.id ?? null) : null,
     };
   }
 
@@ -91,7 +100,13 @@ export class DmService {
         messages: {
           orderBy: { createdAt: 'desc' },
           take: 1,
-          select: { id: true, senderId: true, content: true, createdAt: true, readAt: true },
+          select: {
+            id: true,
+            senderId: true,
+            content: true,
+            createdAt: true,
+            readAt: true,
+          },
         },
       },
       orderBy: { createdAt: 'desc' },

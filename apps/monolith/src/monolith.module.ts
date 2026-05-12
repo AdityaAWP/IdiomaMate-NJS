@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from '@app/shared';
 import { FriendsModule } from './friends/friends.module';
 import { DmModule } from './dm/dm.module';
+import { LobbyModule } from './lobby/lobby.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { DmModule } from './dm/dm.module';
     PrismaModule,
     FriendsModule,
     DmModule,
+    LobbyModule,
   ],
 })
 export class MonolithModule {}

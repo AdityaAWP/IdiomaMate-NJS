@@ -55,7 +55,11 @@ export class DmGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: { receiverId: string; content: string },
   ) {
     const dto: SendMessageDto = { content: payload.content };
-    const message = await this.dmService.sendMessage(client.userId, payload.receiverId, dto);
+    const message = await this.dmService.sendMessage(
+      client.userId,
+      payload.receiverId,
+      dto,
+    );
 
     // Deliver to receiver's personal room (and back to sender for multi-device)
     this.server.to(`user:${payload.receiverId}`).emit('new_message', message);

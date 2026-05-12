@@ -107,6 +107,7 @@ model Lobby {
   id          String   @id @default(uuid()) @db.Uuid
   name        String   @db.VarChar(100)
   description String?
+  bannerUrl   String?
   isPrivate   Boolean  @default(false)
   language    Language
   ownerId     String   @db.Uuid
