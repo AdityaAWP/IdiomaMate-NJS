@@ -10,6 +10,17 @@ datasource db {
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
+enum Language {
+  ENGLISH
+  SPANISH
+  KOREAN
+  JAPANESE
+  ARABIC
+  RUSSIAN
+  MANDARIN
+  FRENCH
+}
+
 enum Proficiency {
   BEGINNER
   INTERMEDIATE
@@ -35,8 +46,8 @@ model User {
   username      String      @unique @db.VarChar(100)
   passwordHash  String?     @db.VarChar(255)
   googleId      String?     @unique @db.VarChar(255)
-  targetLanguage String     @db.VarChar(10)
-  proficiency   Proficiency
+  targetLanguage Language?
+  proficiency   Proficiency?
   avatarUrl     String?     @db.VarChar(500)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -97,7 +108,7 @@ model Lobby {
   name        String   @db.VarChar(100)
   description String?
   isPrivate   Boolean  @default(false)
-  language    String   @db.VarChar(10)
+  language    Language
   ownerId     String   @db.Uuid
   createdAt   DateTime @default(now())
 
