@@ -42,6 +42,13 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# Uploads (keep directory structure, ignore actual files)
+uploads/**/*
+!uploads/**/.gitkeep
+
+# k6 generated test data
+k6/users.json
+
 # temp directory
 .temp
 .tmp
@@ -57,4 +64,12 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /generated/prisma
 
+# Grafana persistent data (provisioned via config, no need to commit)
+monitoring/grafana/data/
+
+example.png
+
 *.md
+*.svg
+
+learn/

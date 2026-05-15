@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: matching
+    static_configs:
+      - targets: ['matching:3001']
+
+  - job_name: notification
+    static_configs:
+      - targets: ['notification:3002']
+
+  - job_name: cadvisor
+    static_configs:
+      - targets: ['cadvisor:8080']

@@ -1,12 +1,23 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Logger } from '@nestjs/common';
+import { EventPattern, Payload } from '@nestjs/microservices';
+import type { MatchRequestEvent, MatchCancelEvent } from '@app/shared';
 import { MatchingService } from './matching.service';
 
 @Controller()
 export class MatchingController {
-  constructor(private readonly matchingService: MatchingService) {}
+  private readonly logger = new Logger(MatchingController.name);
 
-  @Get()
-  getHello(): string {
-    return this.matchingService.getHello();
+  constructor(private matchingService: MatchingService) {}
+
+  @EventPattern('matchmaking.join')
+  async handleJoin(@Payload() data: MatchRequestEvent) {
+    this.logger.log(`matchmaking.join received userId=${data.userId} level=${data.level}`);
+    await this.matchingService.handleJoin(data);
+  }
+
+  @EventPattern('matchmaking.cancel')
+  async handleCancel(@Payload() data: MatchCancelEvent) {
+    this.logger.log(`matchmaking.cancel received userId=${data.userId}`);
+    await this.matchingService.handleCancel(data.userId, data.level);
   }
 }
