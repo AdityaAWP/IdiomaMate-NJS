@@ -57,7 +57,9 @@ export class MatchController implements OnModuleInit {
       publishedAt: Date.now(),
     };
 
-    this.logger.log(`emit matchmaking.join for userId=${userId} level=${dto.level}`);
+    this.logger.log(
+      `emit matchmaking.join for userId=${userId} level=${dto.level}`,
+    );
     this.brokerClient.emit('matchmaking.join', event).subscribe({
       error: (err) => this.logger.error('emit error', err),
     });

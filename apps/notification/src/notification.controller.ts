@@ -11,7 +11,9 @@ export class NotificationController {
 
   @EventPattern('match.found')
   handleMatchFound(@Payload() event: MatchFoundEvent) {
-    this.logger.log(`match.found received for ${event.user1Id} + ${event.user2Id}`);
+    this.logger.log(
+      `match.found received for ${event.user1Id} + ${event.user2Id}`,
+    );
     this.notificationService.handleMatchFound(event);
   }
 }

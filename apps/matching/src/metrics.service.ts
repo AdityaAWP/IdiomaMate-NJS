@@ -1,15 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { Counter, Histogram, Registry } from 'prom-client';
+import { Counter, Summary, Registry } from 'prom-client';
 
 @Injectable()
 export class MetricsService {
   readonly registry = new Registry();
 
-  readonly hop1 = new Histogram({
+  readonly hop1 = new Summary({
     name: 'broker_hop1_transit_ms',
     help: 'Broker transit time: API Service → Matching Service (ms)',
     labelNames: ['broker'],
-    buckets: [1, 5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000],
+    percentiles: [0.5, 0.9, 0.95, 0.99],
+    maxAgeSeconds: 60,
+    ageBuckets: 5,
     registers: [this.registry],
   });
 

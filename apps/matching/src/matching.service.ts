@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import Redis from 'ioredis';
 import { RtcTokenBuilder, RtcRole } from 'agora-token';
@@ -47,11 +53,24 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
   async handleJoin(event: MatchRequestEvent): Promise<void> {
     this.logger.log(`handleJoin userId=${event.userId} level=${event.level}`);
     this.metrics.matchRequestsTotal.inc({ broker: this.broker });
-    this.metrics.hop1.observe({ broker: this.broker }, Date.now() - event.publishedAt);
+    this.metrics.hop1.observe(
+      { broker: this.broker },
+      Date.now() - event.publishedAt,
+    );
 
-    const payload = JSON.stringify({ userId: event.userId, topics: event.topics });
-    const partner = await this.redis.eval(JOIN_LUA, 1, event.level, payload) as string | null;
-    this.logger.log(`Redis result for level=${event.level}: partner=${partner ? 'FOUND' : 'null (waiting)'}`);
+    const payload = JSON.stringify({
+      userId: event.userId,
+      topics: event.topics,
+    });
+    const partner = (await this.redis.eval(
+      JOIN_LUA,
+      1,
+      event.level,
+      payload,
+    )) as string | null;
+    this.logger.log(
+      `Redis result for level=${event.level}: partner=${partner ? 'FOUND' : 'null (waiting)'}`,
+    );
 
     if (!partner) return;
 
@@ -72,7 +91,9 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
       publishedAt: Date.now(),
     };
 
-    this.logger.log(`Publishing match.found for ${found.user1Id} + ${found.user2Id}`);
+    this.logger.log(
+      `Publishing match.found for ${found.user1Id} + ${found.user2Id}`,
+    );
     this.brokerClient.emit('match.found', found);
     this.metrics.matchesTotal.inc({ broker: this.broker });
   }
@@ -94,8 +115,17 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
 
   private generateAgoraToken(channelName: string, uid: number): string {
     const appId = process.env.AGORA_APP_ID ?? 'placeholder_app_id';
-    const appCert = process.env.AGORA_APP_CERTIFICATE ?? 'placeholder_certificate';
+    const appCert =
+      process.env.AGORA_APP_CERTIFICATE ?? 'placeholder_certificate';
     const expireAt = Math.floor(Date.now() / 1000) + 3600;
-    return RtcTokenBuilder.buildTokenWithUid(appId, appCert, channelName, uid, RtcRole.PUBLISHER, expireAt, expireAt);
+    return RtcTokenBuilder.buildTokenWithUid(
+      appId,
+      appCert,
+      channelName,
+      uid,
+      RtcRole.PUBLISHER,
+      expireAt,
+      expireAt,
+    );
   }
 }
