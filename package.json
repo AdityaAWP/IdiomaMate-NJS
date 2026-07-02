@@ -43,6 +43,8 @@
     "amqp-connection-manager": "^5.0.0",
     "amqplib": "^2.0.1",
     "bcryptjs": "^3.0.3",
+    "chart.js": "^4.5.1",
+    "chartjs-node-canvas": "^5.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "ioredis": "^5.10.1",

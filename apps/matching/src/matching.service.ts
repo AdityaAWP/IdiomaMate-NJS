@@ -11,6 +11,7 @@ import { RtcTokenBuilder, RtcRole } from 'agora-token';
 import { v4 as uuidv4 } from 'uuid';
 import type { MatchRequestEvent, MatchFoundEvent } from '@app/shared';
 import { MetricsService } from './metrics.service';
+import { PrismaService } from '@app/shared';
 
 const JOIN_LUA = `
   local waiting = redis.call('HGET', 'pool', KEYS[1])
@@ -40,6 +41,7 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @Inject('BROKER_CLIENT') private brokerClient: ClientProxy,
     private metrics: MetricsService,
+    private prisma: PrismaService,
   ) {}
 
   onModuleInit() {
@@ -53,10 +55,8 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
   async handleJoin(event: MatchRequestEvent): Promise<void> {
     this.logger.log(`handleJoin userId=${event.userId} level=${event.level}`);
     this.metrics.matchRequestsTotal.inc({ broker: this.broker });
-    this.metrics.hop1.observe(
-      { broker: this.broker },
-      Date.now() - event.publishedAt,
-    );
+    const hop1LatencyMs = Date.now() - event.publishedAt;
+    this.metrics.hop1.observe({ broker: this.broker }, hop1LatencyMs);
 
     const payload = JSON.stringify({
       userId: event.userId,
@@ -94,13 +94,20 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
     this.logger.log(
       `Publishing match.found for ${found.user1Id} + ${found.user2Id}`,
     );
+
+    await this.prisma.matchMeasurement
+      .create({
+        data: { broker: this.broker, channelName, hop1Ms: hop1LatencyMs },
+      })
+      .catch((err) =>
+        this.logger.error(`DB write hop1 failed: ${err.message}`),
+      );
+
     this.brokerClient.emit('match.found', found);
     this.metrics.matchesTotal.inc({ broker: this.broker });
   }
 
   async handleCancel(userId: string, level: string): Promise<void> {
-    // Cancel uses userId as ARGV so the Lua compares exact stored payload
-    // We scan the pool for any entry belonging to this user at this level
     const stored = await this.redis.hget('pool', level);
     if (!stored) return;
     try {
@@ -108,9 +115,7 @@ export class MatchingService implements OnModuleInit, OnModuleDestroy {
       if (entry.userId === userId) {
         await this.redis.hdel('pool', level);
       }
-    } catch {
-      // stored value is not valid JSON, skip
-    }
+    } catch {}
   }
 
   private generateAgoraToken(channelName: string, uid: number): string {

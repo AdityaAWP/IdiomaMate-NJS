@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { WebSocket } from 'ws';
 import type { MatchFoundEvent, MatchCancelEvent } from '@app/shared';
 import { MetricsService } from './metrics.service';
+import { PrismaService } from '@app/shared';
 
 interface RegistryEntry {
   ws: WebSocket;
@@ -11,12 +12,14 @@ interface RegistryEntry {
 
 @Injectable()
 export class NotificationService {
+  private readonly logger = new Logger(NotificationService.name);
   private readonly registry = new Map<string, RegistryEntry>();
   private readonly broker = process.env.BROKER ?? 'nats';
 
   constructor(
     @Inject('BROKER_CLIENT') private brokerClient: ClientProxy,
     private metrics: MetricsService,
+    private prisma: PrismaService,
   ) {}
 
   register(userId: string, level: string, ws: WebSocket) {
@@ -33,7 +36,17 @@ export class NotificationService {
   }
 
   handleMatchFound(event: MatchFoundEvent) {
-    this.metrics.hop2.observe({ broker: this.broker }, Date.now() - event.publishedAt);
+    const hop2Ms = Date.now() - event.publishedAt;
+    this.metrics.hop2.observe({ broker: this.broker }, hop2Ms);
+
+    this.prisma.matchMeasurement
+      .updateMany({
+        where: { channelName: event.channelName },
+        data: { hop2Ms: hop2Ms },
+      })
+      .catch((err) =>
+        this.logger.error(`DB write hop2 failed: ${err.message}`),
+      );
 
     const send = (userId: string, payload: object) => {
       const entry = this.registry.get(userId);

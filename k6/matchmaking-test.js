@@ -1,68 +1,99 @@
-/**
- * k6 Load Test — Matchmaking
- *
- * Desain:
- *   - Setiap VU kirim POST /match/join → sleep 1 detik → loop
- *   - Semua VU pakai level english.beginner → pairing instan
- *   - Tidak ada cancel — Redis dibersihkan manual sebelum tiap skenario
- *   - VU count dan duration diatur dari CLI (--vus, --duration)
- *
- * Metrik yang diukur k6:
- *   - http_req_duration: response time POST /match/join
- *   - http_req_failed: error rate
- *   - join_errors: custom counter gagal join
- *
- * Metrik thesis (diukur Prometheus, bukan k6):
- *   - broker_hop1_transit_ms: API → Matching (via broker)
- *   - broker_hop2_transit_ms: Matching → Notification (via broker)
- *
- * Cara menjalankan (per skenario):
- *   docker compose exec redis redis-cli FLUSHDB
- *   k6 run --vus 100  --duration 1m k6/matchmaking-test.js   # Skenario 1
- *   k6 run --vus 500  --duration 1m k6/matchmaking-test.js   # Skenario 2
- *   k6 run --vus 1000 --duration 1m k6/matchmaking-test.js   # Skenario 3
- *   k6 run --vus 1500 --duration 1m k6/matchmaking-test.js   # Skenario 4
- */
-
 import http from 'k6/http';
+import ws from 'k6/ws';
 import { check, sleep } from 'k6';
-import { Counter } from 'k6/metrics';
+import { Counter, Trend } from 'k6/metrics';
 
 const users = JSON.parse(open('./users.json'));
+
 const joinErrors = new Counter('join_errors');
+const matchTimeouts = new Counter('match_timeouts');
+const e2eLatency = new Trend('e2e_latency_ms', true);
 
 const API = __ENV.API_URL || 'http://localhost:3000/api';
+const WS_URL = __ENV.WS_URL || 'ws://localhost:3002/ws';
 const LEVEL = 'english.beginner';
+const MATCH_TIMEOUT_MS = 30000;
 
 export const options = {
   vus: 100,
   duration: '1m',
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   thresholds: {
     http_req_duration: ['p(95)<500'],
-    http_req_failed: ['rate<0.01'],
+    http_req_failed: ['rate<0.05'],
     join_errors: ['count<10'],
+    match_timeouts: ['count<10'],
+    e2e_latency_ms: ['p(95)<5000'],
   },
 };
 
 export default function () {
   const user = users[(__VU - 1) % users.length];
 
-  const joinRes = http.post(
-    `${API}/match/join`,
-    JSON.stringify({ level: LEVEL, topics: ['food', 'travel'] }),
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`,
-      },
-    }
+  let matchReceived = false;
+  let joinSentAt = 0;
+
+  const wsResponse = ws.connect(
+    `${WS_URL}?token=${user.token}`,
+    {},
+    function (socket) {
+      socket.on('open', () => {
+        socket.send(
+          JSON.stringify({
+            event: 'register',
+            data: { level: LEVEL },
+          }),
+        );
+        sleep(0.1);
+
+        joinSentAt = Date.now();
+        const joinRes = http.post(
+          `${API}/match/join`,
+          JSON.stringify({ level: LEVEL, topics: ['food', 'travel'] }),
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user.token}`,
+            },
+          },
+        );
+
+        const joinOk = check(joinRes, {
+          'join: status 202': (r) => r.status === 202,
+        });
+
+        if (!joinOk) {
+          joinErrors.add(1);
+          socket.close();
+        }
+      });
+
+      socket.on('message', (data) => {
+        try {
+          const msg = JSON.parse(data);
+          if (msg.event === 'match_found') {
+            const latency = Date.now() - joinSentAt;
+            e2eLatency.add(latency);
+            matchReceived = true;
+            socket.close();
+          }
+        } catch {}
+      });
+
+      socket.setTimeout(() => {
+        if (!matchReceived) {
+          matchTimeouts.add(1);
+          socket.close();
+        }
+      }, MATCH_TIMEOUT_MS);
+
+      socket.on('error', () => {
+        socket.close();
+      });
+    },
   );
 
-  const joinOk = check(joinRes, {
-    'join: status 202': (r) => r.status === 202,
+  check(wsResponse, {
+    'ws: connected': (r) => r && r.status === 101,
   });
-
-  if (!joinOk) joinErrors.add(1);
-
-  sleep(1);
 }

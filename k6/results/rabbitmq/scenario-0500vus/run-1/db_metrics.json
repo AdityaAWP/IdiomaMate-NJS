@@ -1,0 +1,1 @@
+{"broker":"rabbitmq","total_matches":5227,"throughput_per_second":87.1167,"hop1_p50":13.0000,"hop1_p90":50.0000,"hop1_p95":75.0000,"hop1_p99":150.7400,"hop2_p50":14.0000,"hop2_p90":36.0000,"hop2_p95":47.0000,"hop2_p99":70.0000}

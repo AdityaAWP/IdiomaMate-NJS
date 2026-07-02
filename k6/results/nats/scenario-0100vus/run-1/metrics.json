@@ -1,0 +1,12 @@
+{
+  "broker": "nats",
+  "collected_at": "2026-07-02T21:30:44.305Z",
+  "test_window": {
+    "start": "2026-07-02T21:28:57.000Z",
+    "end": "2026-07-02T21:30:19.000Z"
+  },
+  "broker_resources": {
+    "cpu_percent": 10.0965,
+    "memory_mb": 23.81
+  }
+}

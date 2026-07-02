@@ -7,6 +7,7 @@ import { NotificationService } from './notification.service';
 import { NotificationGateway } from './notification.gateway';
 import { MetricsService } from './metrics.service';
 import { MetricsController } from './metrics.controller';
+import { PrismaModule } from '@app/shared';
 
 const brokerClient = process.env.BROKER === 'rabbitmq'
   ? {
@@ -38,6 +39,7 @@ const brokerClient = process.env.BROKER === 'rabbitmq'
       }),
     }),
     ClientsModule.register([brokerClient as any]),
+    PrismaModule,
   ],
   controllers: [NotificationController, MetricsController],
   providers: [NotificationService, NotificationGateway, MetricsService],

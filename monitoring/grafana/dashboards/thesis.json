@@ -1,8 +1,18 @@
 {
   "__inputs": [],
   "__requires": [
-    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "9.0.0" },
-    { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "9.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    }
   ],
   "annotations": { "list": [] },
   "description": "Idiomamate Thesis — NATS vs RabbitMQ broker transit time comparison",
@@ -32,7 +42,11 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
       "id": 1,
       "options": {
-        "legend": { "calcs": ["mean", "last", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "last", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -84,7 +98,11 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 10 },
       "id": 3,
       "options": {
-        "legend": { "calcs": ["mean", "last", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "last", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -126,16 +144,26 @@
     {
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "fieldConfig": {
-        "defaults": { "unit": "ms", "thresholds": { "steps": [
-          { "color": "green", "value": null },
-          { "color": "yellow", "value": 50 },
-          { "color": "red", "value": 200 }
-        ]}},
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        },
         "overrides": []
       },
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 19 },
       "id": 10,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -150,16 +178,26 @@
     {
       "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
       "fieldConfig": {
-        "defaults": { "unit": "ms", "thresholds": { "steps": [
-          { "color": "green", "value": null },
-          { "color": "yellow", "value": 50 },
-          { "color": "red", "value": 200 }
-        ]}},
+        "defaults": {
+          "unit": "ms",
+          "thresholds": {
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        },
         "overrides": []
       },
       "gridPos": { "h": 4, "w": 6, "x": 6, "y": 19 },
       "id": 11,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "background" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -179,7 +217,12 @@
       },
       "gridPos": { "h": 4, "w": 6, "x": 12, "y": 19 },
       "id": 12,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -188,7 +231,7 @@
           "refId": "A"
         }
       ],
-      "title": "Match Requests (5m)",
+      "title": "Match Requests",
       "type": "stat"
     },
     {
@@ -199,7 +242,12 @@
       },
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 19 },
       "id": 13,
-      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto", "textMode": "auto", "colorMode": "value" },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
@@ -208,7 +256,7 @@
           "refId": "A"
         }
       ],
-      "title": "Matches Made (5m)",
+      "title": "Matches Made",
       "type": "stat"
     },
     {
@@ -231,7 +279,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
       "id": 20,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -272,7 +324,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
       "id": 21,
       "options": {
-        "legend": { "calcs": ["mean", "last"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "last"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -306,7 +362,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 33 },
       "id": 5,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -339,7 +399,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 33 },
       "id": 6,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -378,7 +442,11 @@
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 32 },
       "id": 7,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -424,7 +492,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 41 },
       "id": 8,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [
@@ -457,7 +529,11 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 41 },
       "id": 9,
       "options": {
-        "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom" },
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
         "tooltip": { "mode": "multi" }
       },
       "targets": [

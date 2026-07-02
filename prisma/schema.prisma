@@ -101,6 +101,20 @@ model Room {
   @@map("rooms")
 }
 
+// ─── Thesis measurement table ────────────────────────────────────────────────
+
+model MatchMeasurement {
+  id          String   @id @default(uuid()) @db.Uuid
+  broker      String   @db.VarChar(20)
+  channelName String   @db.VarChar(255)
+  hop1Ms      Float
+  hop2Ms      Float?
+  createdAt   DateTime @default(now())
+
+  @@index([broker, createdAt])
+  @@map("match_measurements")
+}
+
 // ─── Monolith tables ─────────────────────────────────────────────────────────
 
 model Lobby {

@@ -49,6 +49,7 @@ services:
       NATS_URL: nats://nats:4222
       DATABASE_URL: postgresql://idiomamate:idiomamate@postgres:5432/idiomamate
       JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: 2h
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-not_configured}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-not_configured}
     depends_on:
@@ -70,10 +71,13 @@ services:
       REDIS_URL: redis://redis:6379
       AGORA_APP_ID: ${AGORA_APP_ID:-placeholder_app_id}
       AGORA_APP_CERTIFICATE: ${AGORA_APP_CERTIFICATE:-placeholder_certificate}
+      DATABASE_URL: postgresql://idiomamate:idiomamate@postgres:5432/idiomamate
     depends_on:
       nats:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
 
   notification:
@@ -87,6 +91,7 @@ services:
       BROKER: nats
       NATS_URL: nats://nats:4222
       JWT_SECRET: ${JWT_SECRET}
+      DATABASE_URL: postgresql://idiomamate:idiomamate@postgres:5432/idiomamate
     depends_on:
       nats:
         condition: service_healthy

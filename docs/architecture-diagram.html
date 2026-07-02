@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Idiomamate — System Architecture</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    background: #fff;
+    padding: 30px;
+    color: #000;
+  }
+
+  /* ── generic box ── */
+  .box {
+    border: 1px solid #000;
+    padding: 6px 10px;
+    text-align: center;
+    background: #fff;
+  }
+  .box-title {
+    font-weight: bold;
+    margin-bottom: 2px;
+  }
+  .box-sub {
+    font-size: 10px;
+    color: #333;
+  }
+
+  /* ── layer wrapper ── */
+  .layer {
+    border: 1px solid #000;
+    padding: 8px 10px 10px;
+    position: relative;
+    margin-bottom: 0;
+  }
+  .layer-label {
+    position: absolute;
+    top: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 0 6px;
+    font-weight: bold;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* ── layout helpers ── */
+  .row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+    margin-top: 8px;
+  }
+  .col { flex: 1; }
+
+  /* ── arrow ── */
+  .arrow-down {
+    text-align: center;
+    font-size: 16px;
+    line-height: 20px;
+    height: 20px;
+    position: relative;
+  }
+  .arrow-label {
+    font-size: 9px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 0;
+    white-space: nowrap;
+    color: #333;
+  }
+
+  /* ── main wrapper: content + monitoring side panel ── */
+  .main-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .content-col { flex: 1; }
+  .monitoring-col { width: 148px; flex-shrink: 0; }
+
+  /* ── double arrows between layers ── */
+  .arrows-row {
+    display: flex;
+    justify-content: space-around;
+    height: 28px;
+    align-items: center;
+    position: relative;
+    font-size: 9px;
+  }
+  .arr { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+  .arr span { font-size: 9px; color: #444; }
+  .arr .sym { font-size: 15px; line-height: 1; }
+
+  /* ── connector line from app layer to monitoring ── */
+  .export-label {
+    font-size: 9px;
+    color: #333;
+    text-align: center;
+    margin: 3px 0;
+  }
+</style>
+</head>
+<body>
+
+<div style="text-align:center; font-size:13px; font-weight:bold; margin-bottom:16px;">
+  Arsitektur Sistem Idiomamate
+</div>
+
+<div class="main-wrapper">
+
+  <!-- ══════════════════════════════ LEFT: CONTENT ══════════════════════════════ -->
+  <div class="content-col">
+
+    <!-- CLIENT LAYER -->
+    <div class="layer">
+      <div class="layer-label">Client Layer</div>
+      <div style="margin-top:8px; display:flex; justify-content:center;">
+        <div class="box" style="width:180px;">
+          <div class="box-title">Web Browser</div>
+          <div class="box-sub">Frontend Client</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrows-row">
+      <div class="arr">
+        <span>HTTP</span>
+        <span class="sym">↓</span>
+      </div>
+      <div class="arr">
+        <span>WebSocket</span>
+        <span class="sym">↓</span>
+      </div>
+    </div>
+
+    <!-- COMMUNICATION LAYER -->
+    <div class="layer">
+      <div class="layer-label">Communication Layer</div>
+      <div class="row">
+        <div class="box col">
+          <div class="box-title">HTTP REST API</div>
+          <div class="box-sub">Request / Response</div>
+        </div>
+        <div class="box col">
+          <div class="box-title">WebSocket Connection</div>
+          <div class="box-sub">Persistent, Full-duplex</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrows-row">
+      <div class="arr">
+        <span class="sym">↓</span>
+      </div>
+      <div class="arr">
+        <span class="sym">↓</span>
+      </div>
+    </div>
+
+    <!-- APPLICATION LAYER -->
+    <div class="layer">
+      <div class="layer-label">Application Layer</div>
+      <div class="row" style="align-items:flex-start;">
+
+        <!-- API Service -->
+        <div class="box col" style="padding:6px 8px;">
+          <div class="box-title">API Service</div>
+          <div class="box-sub">port 3000</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:4px 0;">
+          <div class="layer" style="margin-top:4px;padding:4px 6px;">
+            <div class="layer-label" style="font-size:9px;">Controllers</div>
+            <div style="margin-top:6px;">
+              <div class="box" style="margin-bottom:4px;padding:3px 4px;">
+                <div class="box-sub">JwtAuthGuard</div>
+              </div>
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-title" style="font-size:10px;">MatchController</div>
+                <div class="box-sub">POST /match/join</div>
+                <div class="box-sub">POST /match/cancel</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Matching Service -->
+        <div class="box col" style="padding:6px 8px;">
+          <div class="box-title">Matching Service</div>
+          <div class="box-sub">port 3001</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:4px 0;">
+          <div class="layer" style="margin-top:4px;padding:4px 6px;">
+            <div class="layer-label" style="font-size:9px;">Components</div>
+            <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-title" style="font-size:10px;">MatchingController</div>
+                <div class="box-sub">@EventPattern</div>
+              </div>
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-title" style="font-size:10px;">MatchingService</div>
+                <div class="box-sub">Lua Script · Agora Token</div>
+              </div>
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-sub">MetricsController</div>
+                <div class="box-sub">GET /metrics</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notification Service -->
+        <div class="box col" style="padding:6px 8px;">
+          <div class="box-title">Notification Service</div>
+          <div class="box-sub">port 3002</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:4px 0;">
+          <div class="layer" style="margin-top:4px;padding:4px 6px;">
+            <div class="layer-label" style="font-size:9px;">Components</div>
+            <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-title" style="font-size:10px;">NotificationGateway</div>
+                <div class="box-sub">WebSocket Handler</div>
+              </div>
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-title" style="font-size:10px;">NotificationService</div>
+                <div class="box-sub">@EventPattern</div>
+              </div>
+              <div class="box" style="padding:3px 4px;">
+                <div class="box-sub">MetricsController</div>
+                <div class="box-sub">GET /metrics</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrows-row">
+      <div class="arr">
+        <span>emit matchmaking.join / cancel</span>
+        <span class="sym">↓</span>
+      </div>
+      <div class="arr">
+        <span class="sym">↑</span>
+        <span>deliver match.found</span>
+      </div>
+    </div>
+
+    <!-- BROKER LAYER -->
+    <div class="layer">
+      <div class="layer-label">Broker Layer</div>
+      <div style="margin-top:8px; display:flex; justify-content:center;">
+        <div class="box" style="width:100%;">
+          <div class="box-title">Message Broker — NATS Core &nbsp;OR&nbsp; RabbitMQ</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:5px 0;">
+          <div class="row" style="justify-content:center; gap:16px; margin-top:4px;">
+            <div class="box" style="flex:1; padding:4px;">
+              <div class="box-sub" style="font-weight:bold;">Subjects / Routing Keys</div>
+              <div class="box-sub">matchmaking.join</div>
+              <div class="box-sub">matchmaking.cancel</div>
+              <div class="box-sub">match.found</div>
+            </div>
+            <div class="box" style="flex:1; padding:4px;">
+              <div class="box-sub" style="font-weight:bold;">NATS</div>
+              <div class="box-sub">Direct subject routing</div>
+              <div class="box-sub">In-memory, no persist</div>
+            </div>
+            <div class="box" style="flex:1; padding:4px;">
+              <div class="box-sub" style="font-weight:bold;">RabbitMQ</div>
+              <div class="box-sub">Topic Exchange</div>
+              <div class="box-sub">Queue → Consumer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- arrows -->
+    <div class="arrows-row">
+      <div class="arr">
+        <span>HGET / HSET pool</span>
+        <span class="sym">↓</span>
+      </div>
+      <div class="arr">
+        <span class="sym">↓</span>
+        <span>SQL queries</span>
+      </div>
+    </div>
+
+    <!-- DATA LAYER -->
+    <div class="layer">
+      <div class="layer-label">Data Layer</div>
+      <div class="row" style="align-items:flex-start;">
+
+        <!-- Redis -->
+        <div class="box col" style="padding:6px 8px;">
+          <div class="box-title">Redis</div>
+          <div class="box-sub">port 6379</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:4px 0;">
+          <div class="layer" style="margin-top:4px;padding:4px 6px;">
+            <div class="layer-label" style="font-size:9px;">Structure</div>
+            <div style="margin-top:6px;">
+              <div class="box" style="padding:3px 6px;">
+                <div class="box-title" style="font-size:10px;">Hash: pool</div>
+                <div class="box-sub">key → level</div>
+                <div class="box-sub">value → userId + topics</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PostgreSQL -->
+        <div class="box col" style="padding:6px 8px;">
+          <div class="box-title">PostgreSQL</div>
+          <div class="box-sub">port 5432</div>
+          <hr style="border:none;border-top:1px solid #ccc;margin:4px 0;">
+          <div class="layer" style="margin-top:4px;padding:4px 6px;">
+            <div class="layer-label" style="font-size:9px;">Tables</div>
+            <div class="row" style="margin-top:6px; flex-wrap:wrap;">
+              <div class="box" style="padding:3px 6px; flex:1; min-width:60px;">
+                <div class="box-sub">users</div>
+              </div>
+              <div class="box" style="padding:3px 6px; flex:1; min-width:60px;">
+                <div class="box-sub">sessions</div>
+              </div>
+              <div class="box" style="padding:3px 6px; flex:1; min-width:60px;">
+                <div class="box-sub">friends</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- end content-col -->
+
+  <!-- ══════════════════════════════ RIGHT: MONITORING ══════════════════════════════ -->
+  <div class="monitoring-col">
+    <div class="layer" style="height:100%;">
+      <div class="layer-label">Monitoring Layer</div>
+      <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; align-items:center;">
+
+        <div class="box" style="width:100%; padding:5px;">
+          <div class="box-title">prom-client</div>
+          <div class="box-sub">Summary · Counter</div>
+          <div class="box-sub">(in-app library)</div>
+        </div>
+
+        <div style="font-size:10px; color:#444;">↓ expose /metrics</div>
+
+        <div class="box" style="width:100%; padding:5px;">
+          <div class="box-title">Prometheus</div>
+          <div class="box-sub">Scrape tiap 2 detik</div>
+          <div class="box-sub">Time-Series DB</div>
+        </div>
+
+        <div style="font-size:10px; color:#444;">↓ Query</div>
+
+        <div class="box" style="width:100%; padding:5px;">
+          <div class="box-title">Grafana</div>
+          <div class="box-sub">Visualization</div>
+          <div class="box-sub">Dashboard</div>
+        </div>
+
+        <div style="border-top:1px solid #ccc; width:100%; margin:4px 0;"></div>
+
+        <div class="box" style="width:100%; padding:5px;">
+          <div class="box-title">cAdvisor</div>
+          <div class="box-sub">CPU & Memory</div>
+          <div class="box-sub">per Container</div>
+        </div>
+
+        <div style="font-size:10px; color:#444; text-align:center;">
+          ↑ scrape :8080/metrics
+        </div>
+
+        <div style="font-size:9px; color:#555; text-align:center; border:1px dashed #999; padding:4px; width:100%;">
+          Docker Containers<br>
+          (all services)
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main-wrapper -->
+
+</body>
+</html>

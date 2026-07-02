@@ -9,7 +9,7 @@ export class MetricsService {
     name: 'broker_hop1_transit_ms',
     help: 'Broker transit time: API Service → Matching Service (ms)',
     labelNames: ['broker'],
-    percentiles: [0.5, 0.9, 0.95, 0.99],
+    percentiles: [0.5, 0.95, 0.99],
     maxAgeSeconds: 60,
     ageBuckets: 5,
     registers: [this.registry],

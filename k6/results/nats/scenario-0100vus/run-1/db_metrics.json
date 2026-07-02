@@ -1,0 +1,1 @@
+{"broker" : "nats", "total_matches" : 7206, "throughput_per_second" : 120.1000, "hop1_p50" : 6.0000, "hop1_p90" : 21.0000, "hop1_p95" : 32.0000, "hop1_p99" : 109.0000, "hop2_p50" : 45.0000, "hop2_p90" : 86.0000, "hop2_p95" : 131.0000, "hop2_p99" : 958.9000}
